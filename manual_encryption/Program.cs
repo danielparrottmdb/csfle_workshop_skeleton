@@ -1,55 +1,17 @@
 ﻿using MongoDB.Driver;
 using MongoDB.Driver.Encryption;
-using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-
-// from bson.binary import STANDARD, Binary
-// from bson.codec_options import CodecOptions
-// from datetime import datetime
-// from pymongo import MongoClient
-// from pymongo.encryption import Algorithm
-// from pymongo.encryption import ClientEncryption
-// from pymongo.errors import EncryptionError, ServerSelectionTimeoutError, ConnectionFailure
-// from urllib.parse import quote_plus
-// import sys
-
 
 // IN VALUES HERE!
 const string PetName = "solid-cat";
-const string MdbPassword = "";
+const string MdbPassword = "password123";
 const string AppUser = "app_user";
 const string CaPath = "/etc/pki/tls/certs/ca.cert";
 const string PemPath = "/home/ec2-user/server.pem";
 
-// private MongoClient GetClient(string )
-// def mdb_client(connection_string, auto_encryption_opts=None):
-//   """ Returns a MongoDB client instance
-  
-//   Creates a  MongoDB client instance and tests the client via a `hello` to the server
-
-//   Parameters
-//   ------------
-//     connection_string: string
-//       MongoDB connection string URI containing username, password, host, port, tls, etc
-//   Return
-//   ------------
-//     client: mongo.MongoClient
-//       MongoDB client instance
-//     err: error
-//       Error message or None of successful
-//   """
-
-//   try:
-//     client = MongoClient(connection_string)
-//     client.admin.command('hello')
-//     return client, None
-//   except (ServerSelectionTimeoutError, ConnectionFailure) as e:
-//     return None, f"Cannot connect to database, please check settings in config file: {e}"
-
-// def main():
-
 // Obviously this should not be hardcoded
-const string connection_string = $"mongodb://{AppUser}:{MdbPassword}@csfle-mongodb-{PetName}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}&tlsPEMKeyFile={PemPath}";
+const string connection_string = $"mongodb://{AppUser}:{MdbPassword}@csfle-mongodb-{PetName}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
 
 // Declare or key vault namespce
 const string keyvault_db = "__encryption";
@@ -75,7 +37,7 @@ const string encrypted_coll_name = "employee";
 var client = new MongoClient(connection_string);
 
 // instantiate our ClientEncryption object
-var cert = new X509Certificate( "/home/ec2-user/server.pem");
+var cert = new X509Certificate("/home/ec2-user/server.pem");
 var sss = cert.ToString(true);
 var tls_options = new SslSettings();
 tls_options.ClientCertificates = new X509Certificate[] { cert };
@@ -84,6 +46,7 @@ var client_encryption_options = new ClientEncryptionOptions(client, keyvault_nam
 var client_encryption = new ClientEncryption(client_encryption_options);
 
 var dbs = client.ListDatabaseNames();
+dbs.ForEachAsync(db => System.Console.WriteLine(db.ToString()));
 //   payload = {
 //     "name": {
 //       "firstName": "Manish",
@@ -152,4 +115,3 @@ var dbs = client.ListDatabaseNames();
 // result = client[encrypted_db_name][encrypted_coll_name].insert_one(payload)
 
 // print(result.inserted_id)
-
