@@ -8,7 +8,7 @@ const string PetName = "solid-cat";
 const string MdbPassword = "password123";
 const string AppUser = "app_user";
 const string CaPath = "/etc/pki/tls/certs/ca.cert";
-const string PemPath = "/home/ec2-user/server.pem";
+const string Pkcs12Path = "/home/ec2-user/server.pkcs12";
 
 // Obviously this should not be hardcoded
 const string connection_string = $"mongodb://{AppUser}:{MdbPassword}@csfle-mongodb-{PetName}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
@@ -37,10 +37,7 @@ const string encrypted_coll_name = "employee";
 var client = new MongoClient(connection_string);
 
 // instantiate our ClientEncryption object
-var cert = new X509Certificate("/home/ec2-user/server.pem");
-// var sss = cert.ToString(true);
-var tls_options = new SslSettings();
-tls_options.ClientCertificates = new X509Certificate[] { cert };
+var tls_options = new SslSettings { ClientCertificates = new [] { new X509Certificate(Pkcs12Path) } };
 var kms_tls_options = new Dictionary<string, SslSettings> { { provider, tls_options } };
 var client_encryption_options = new ClientEncryptionOptions(client, keyvault_namespace, kms_provider, kms_tls_options);
 var client_encryption = new ClientEncryption(client_encryption_options);
@@ -96,7 +93,7 @@ try
     // payload["name"]["lastName"] = # Put code here to encrypt the data
     var deterministicEncryptOptions = new EncryptOptions(EncryptionAlgorithm.AEAD_AES_256_CBC_HMAC_SHA_512_Deterministic, keyId: data_key_id_1.AsGuid);
     payload["name"]["firstName"] = await client_encryption.EncryptAsync(payload["name"]["firstName"], deterministicEncryptOptions);
-    payload["name"]["firstName"] = await client_encryption.EncryptAsync(payload["name"]["firstName"], deterministicEncryptOptions);
+    payload["name"]["lastName"] = await client_encryption.EncryptAsync(payload["name"]["lastName"], deterministicEncryptOptions);
 
     // Do random fields
     // if payload["name"]["otherNames"] is None:
