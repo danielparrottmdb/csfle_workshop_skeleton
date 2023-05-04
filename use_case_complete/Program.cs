@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 // IN VALUES HERE!
 const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "passwordone";
+const string MDB_PASSWORD = "password123";
 
-const string AppUser = "mongoadmin";
+const string AppUser = "app_user";
 const string CaPath = "/etc/pki/tls/certs/ca.cert";
 
 // Note that the .NET driver requires the certificate to be in PKCS12 format. You can convert
@@ -61,7 +61,7 @@ if (dataKeyId_1.IsBsonNull)
     Console.WriteLine("Common DEK missing");
     return;
 }
-var _ = GetEmployeeKey(clientEncryption, employeeId, provider, "1");
+var _ = await GetEmployeeKey(clientEncryption, employeeId, provider, "1");
 
 var payload = new BsonDocument
 {
@@ -220,7 +220,7 @@ static (string, string) GenerateName()
 
 static async Task<Guid> GetEmployeeKey(ClientEncryption client, string altName, string providerName, string keyId)
 {
-    var employeeKey = (await client.GetKeyByAlternateKeyNameAsync(altName));
+    var employeeKey = await client.GetKeyByAlternateKeyNameAsync(altName);
     if (employeeKey is null)
     {
         return await client.CreateDataKeyAsync(
