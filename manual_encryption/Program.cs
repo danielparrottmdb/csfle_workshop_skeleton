@@ -4,46 +4,50 @@ using MongoDB.Driver.Encryption;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
-const string PetName = "solid-cat";
-const string MdbPassword = "password123";
+const string PETNAME = "solid-cat";
+const string MDB_PASSWORD = "password123";
+
 const string AppUser = "app_user";
 const string CaPath = "/etc/pki/tls/certs/ca.cert";
+
+// Note that the .NET driver requires the certificate to be in PKCS12 format. You can convert
+// the file /home/ec2-user/server.pem into PKCS12 with the command
+// openssl pkcs12 -export -out "/home/ec2-user/server.pkcs12" -in "/home/ec2-user/server.pem" -name "kmipcert"
 const string Pkcs12Path = "/home/ec2-user/server.pkcs12";
 
 // Obviously this should not be hardcoded
-const string connection_string = $"mongodb://{AppUser}:{MdbPassword}@csfle-mongodb-{PetName}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
+const string connectionString = $"mongodb://{AppUser}:{MDB_PASSWORD}@csfle-mongodb-{PETNAME}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
 
-// Declare or key vault namespce
-const string keyvault_db = "__encryption";
-const string keyvault_coll = "__keyVault";
-var keyvault_namespace = new CollectionNamespace(keyvault_db, keyvault_coll);
+// Declare our key vault namespce
+const string keyvaultDb = "__encryption";
+const string keyvaultColl = "__keyVault";
+var keyvault_namespace = new CollectionNamespace(keyvaultDb, keyvaultColl);
 
-// declare our key provider type
+// Declare our key provider type
 const string provider = "kmip";
 
-// declare our key provider attributes
-var kms_provider = new Dictionary<string, IReadOnlyDictionary<string, object>>();
-var provider_settings = new Dictionary<string, object>
+// Declare our key provider attributes
+var providerSettings = new Dictionary<string, object>
 {
-    { "endpoint", $"csfle-kmip-{PetName}.mdbtraining.net" }
+    { "endpoint", $"csfle-kmip-{PETNAME}.mdbtraining.net" }
 };
-kms_provider.Add(provider, provider_settings);
+var kmsProvider = new Dictionary<string, IReadOnlyDictionary<string, object>>
+{
+    { provider, providerSettings }
+};
 
-// declare our database and collection
-const string encrypted_db_name = "companyData";
-const string encrypted_coll_name = "employee";
+// Declare our database and collection
+const string encryptedDbName = "companyData";
+const string encryptedCollName = "employee";
 
-// instantiate our MongoDB Client object
-var client = new MongoClient(connection_string);
+// Instantiate our MongoDB Client object
+var client = new MongoClient(connectionString);
 
-// instantiate our ClientEncryption object
-var tls_options = new SslSettings { ClientCertificates = new [] { new X509Certificate(Pkcs12Path) } };
-var kms_tls_options = new Dictionary<string, SslSettings> { { provider, tls_options } };
-var client_encryption_options = new ClientEncryptionOptions(client, keyvault_namespace, kms_provider, kms_tls_options);
-var client_encryption = new ClientEncryption(client_encryption_options);
-
-// var dbs = client.ListDatabaseNames();
-// dbs.ForEachAsync(db => System.Console.WriteLine(db.ToString()));
+// Instantiate our ClientEncryption object
+var tlsOptions = new SslSettings { ClientCertificates = new [] { new X509Certificate(Pkcs12Path) } };
+var kmsTlsOptions = new Dictionary<string, SslSettings> { { provider, tlsOptions } };
+var clientEncryptionOptions = new ClientEncryptionOptions(client, keyvault_namespace, kmsProvider, kmsTlsOptions);
+var clientEncryption = new ClientEncryption(clientEncryptionOptions);
 
 var payload = new BsonDocument
 {
@@ -74,71 +78,60 @@ var payload = new BsonDocument
     }
 };
 
-try
+// Retrieve the DEK UUID
+var dataKeyId_1 = (await clientEncryption.GetKeyByAlternateKeyNameAsync("dataKey1"))["_id"];
+// Put code here to find the _id of the DEK we created previously
+if (dataKeyId_1.IsBsonNull)
 {
-    // retrieve the DEK UUID
-    var data_key_id_1 = (await client_encryption.GetKeyByAlternateKeyNameAsync("dataKey1"))["_id"];
-    // Put code here to find the _id of the DEK we created previously
-    if (data_key_id_1.IsBsonNull)
-    {
-        System.Console.WriteLine("Failed to find DEK");
-        return;
-    }
-
-    // WRITE CODE HERE TO ENCRYPT THE APPROPRIATE FIELDS
-    // Don't forget to handle to event of name.otherNames being null
-
-    // Do deterministic fields
-    // payload["name"]["firstName"] = # Put code here to encrypt the data
-    // payload["name"]["lastName"] = # Put code here to encrypt the data
-    var deterministicEncryptOptions = new EncryptOptions(EncryptionAlgorithm.AEAD_AES_256_CBC_HMAC_SHA_512_Deterministic, keyId: data_key_id_1.AsGuid);
-    payload["name"]["firstName"] = await client_encryption.EncryptAsync(payload["name"]["firstName"], deterministicEncryptOptions);
-    payload["name"]["lastName"] = await client_encryption.EncryptAsync(payload["name"]["lastName"], deterministicEncryptOptions);
-
-    // Do random fields
-    // if payload["name"]["otherNames"] is None:
-    //     # put code here to delete this field if None
-    // else:
-    //     payload["name"]["otherNames"] = # Put code here to encrypt the data
-    // payload["address"] = # Put code here to encrypt the data
-    // payload["dob"] = # Put code here to encrypt the data
-    // payload["phoneNumber"] = # Put code here to encrypt the data
-    // payload["salary"] = # Put code here to encrypt the data
-    // payload["taxIdentifier"] = # Put code here to encrypt the data
-    var randomEncryptOptions = new EncryptOptions(EncryptionAlgorithm.AEAD_AES_256_CBC_HMAC_SHA_512_Random, keyId: data_key_id_1.AsGuid);
-    if (payload["name"]["otherNames"].IsBsonNull)
-    {
-        payload["name"].AsBsonDocument.Remove("otherNames");
-    }
-    else
-    {
-        payload["name"]["otherNames"] = await client_encryption.EncryptAsync(payload["name"]["otherNames"], randomEncryptOptions);
-    }
-    payload["address"] = await client_encryption.EncryptAsync(payload["address"], randomEncryptOptions);
-    payload["dob"] = await client_encryption.EncryptAsync(payload["dob"], randomEncryptOptions);
-    payload["phoneNumber"] = await client_encryption.EncryptAsync(payload["phoneNumber"], randomEncryptOptions);
-    payload["salary"] = await client_encryption.EncryptAsync(payload["salary"], randomEncryptOptions);
-    payload["taxIdentifier"] = await client_encryption.EncryptAsync(payload["taxIdentifier"], randomEncryptOptions);
-
-
-    // Test if the data is encrypted
-    foreach (var data in new[] { payload["name"]["firstName"], payload["name"]["lastName"], payload["address"], payload["dob"], payload["phoneNumber"], payload["salary"], payload["taxIdentifier"] })
-    {
-        if (!data.IsBsonBinaryData && data["subtype"].AsInt32 != 6)
-        {
-            System.Console.WriteLine("Data is not encrypted");
-            Environment.Exit(1);
-        }
-    }
-}
-catch (MongoEncryptionException ex)
-{
-    System.Console.WriteLine($"Encryption error {ex}");
+    Console.WriteLine("Failed to find DEK");
     return;
 }
 
-System.Console.WriteLine(payload);
+// WRITE CODE HERE TO ENCRYPT THE APPROPRIATE FIELDS
+// Don't forget to handle to event of name.otherNames being null
 
-await client.GetDatabase(encrypted_db_name).GetCollection<BsonDocument>(encrypted_coll_name).InsertOneAsync(payload);
+// Do deterministic fields
+// payload["name"]["firstName"] = # Put code here to encrypt the data
+// payload["name"]["lastName"] = # Put code here to encrypt the data
+var deterministicEncryptOptions = new EncryptOptions(EncryptionAlgorithm.AEAD_AES_256_CBC_HMAC_SHA_512_Deterministic, keyId: dataKeyId_1.AsGuid);
+payload["name"]["firstName"] = await clientEncryption.EncryptAsync(payload["name"]["firstName"], deterministicEncryptOptions);
+payload["name"]["lastName"] = await clientEncryption.EncryptAsync(payload["name"]["lastName"], deterministicEncryptOptions);
 
-System.Console.WriteLine(payload["_id"]);
+// Do random fields
+// if payload["name"]["otherNames"] is None:
+//     # put code here to delete this field if None
+// else:
+//     payload["name"]["otherNames"] = # Put code here to encrypt the data
+// payload["address"] = # Put code here to encrypt the data
+// payload["dob"] = # Put code here to encrypt the data
+// payload["phoneNumber"] = # Put code here to encrypt the data
+// payload["salary"] = # Put code here to encrypt the data
+// payload["taxIdentifier"] = # Put code here to encrypt the data
+var randomEncryptOptions = new EncryptOptions(EncryptionAlgorithm.AEAD_AES_256_CBC_HMAC_SHA_512_Random, keyId: dataKeyId_1.AsGuid);
+if (payload["name"]["otherNames"].IsBsonNull)
+{
+    payload["name"].AsBsonDocument.Remove("otherNames");
+}
+else
+{
+    payload["name"]["otherNames"] = await clientEncryption.EncryptAsync(payload["name"]["otherNames"], randomEncryptOptions);
+}
+payload["address"] = await clientEncryption.EncryptAsync(payload["address"], randomEncryptOptions);
+payload["dob"] = await clientEncryption.EncryptAsync(payload["dob"], randomEncryptOptions);
+payload["phoneNumber"] = await clientEncryption.EncryptAsync(payload["phoneNumber"], randomEncryptOptions);
+payload["salary"] = await clientEncryption.EncryptAsync(payload["salary"], randomEncryptOptions);
+payload["taxIdentifier"] = await clientEncryption.EncryptAsync(payload["taxIdentifier"], randomEncryptOptions);
+
+// Test if the data is encrypted
+foreach (var data in new[] { payload["name"]["firstName"], payload["name"]["lastName"], payload["address"], payload["dob"], payload["phoneNumber"], payload["salary"], payload["taxIdentifier"] })
+{
+    if (data.BsonType != BsonType.Binary || data.AsBsonBinaryData.SubType != BsonBinarySubType.Encrypted)
+    {
+        Console.WriteLine("Data is not encrypted");
+        return;
+    }
+}
+
+Console.WriteLine(payload);
+await client.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).InsertOneAsync(payload);
+Console.WriteLine(payload["_id"]);
