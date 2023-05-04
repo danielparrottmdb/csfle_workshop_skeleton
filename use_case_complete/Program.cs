@@ -193,12 +193,10 @@ Console.WriteLine(result);
 var filter2 = query.Eq(d => d["keyAltNames"], employeeId);
 await client.GetDatabase(keyvaultDb).GetCollection<BsonDocument>(keyvaultColl).DeleteOneAsync(filter2);
 
-await Task.Delay(1000); // One second
+await Task.Delay(60000); // One minute
 
-var newClient = MdbClient(connectionString, autoEncryption);
-result = await (await newClient.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).FindAsync(filter1)).FirstOrDefaultAsync();
-Console.WriteLine(result);
-
+var result1 = await (await encryptedColl.FindAsync(filter1)).FirstOrDefaultAsync();
+System.Console.WriteLine(result1);
 
 static MongoClient MdbClient(string connectionString, AutoEncryptionOptions? options = null)
 {
