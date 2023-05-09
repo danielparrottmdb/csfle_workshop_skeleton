@@ -5,8 +5,8 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
-const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "password123";
+const string PETNAME = ;
+const string MDB_PASSWORD = ;
 
 const string AppUser = "app_user";
 const string CaPath = "/etc/pki/tls/certs/ca.cert";
@@ -55,7 +55,7 @@ var payload = new BsonDocument
     {
         "name", new BsonDocument
         {
-            { "firstName", "Manish" },
+            { "firstName", "Kuber" },
             { "lastName", "Engineer" },
             { "otherNames", BsonNull.Value },
         }
@@ -63,19 +63,19 @@ var payload = new BsonDocument
     {
         "address", new BsonDocument
         {
-            { "streetAddress", "1 Bson Street" },
+            { "streetAddress", "12 Bson Street" },
             { "suburbCounty", "Mongoville" },
             { "stateProvince", "Victoria" },
             { "zipPostcode", "3999" },
             { "country", "Oz" }
         }
     },
-    { "dob", new DateTime(1980, 10, 10) },
+    { "dob", new DateTime(1981, 11, 11) },
     { "phoneNumber", "1800MONGO" },
-    { "salary", 999999.99m },
-    { "taxIdentifier", "78SD20NN001" },
+    { "salary", 999999.99 },
+    { "taxIdentifier", "78SDSSNN001" },
     {
-        "role", new BsonArray { "CTO" }
+        "role", new BsonArray { "DEV" }
     }
 };
 
