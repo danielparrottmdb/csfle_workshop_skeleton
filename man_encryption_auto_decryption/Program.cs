@@ -58,6 +58,7 @@ var extraOptions = new Dictionary<string, object>()
 var autoEncryption = new AutoEncryptionOptions(
     kmsProviders: kmsProvider,
     keyVaultNamespace: keyvaultNamespace,
+    bypassAutoEncryption: true,     // We do not want to autoencrypt
     extraOptions: extraOptions,
     tlsOptions: kmsTlsOptions);
 var encryptedClient = MdbClient(connectionString, autoEncryption);
