@@ -4,8 +4,8 @@ using MongoDB.Driver.Encryption;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
-const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "password123";
+const string PETNAME = ;
+const string MDB_PASSWORD = ;
 
 const string appUser = "app_user";
 const string caPath = "/etc/pki/tls/certs/ca.cert";
@@ -58,6 +58,7 @@ var extraOptions = new Dictionary<string, object>()
 var autoEncryption = new AutoEncryptionOptions(
     kmsProviders: kmsProvider,
     keyVaultNamespace: keyvaultNamespace,
+    schemaMap: , // TODO: WHAT DO WE PUT HERE?
     bypassAutoEncryption: true,     // We do not want to autoencrypt
     extraOptions: extraOptions,
     tlsOptions: kmsTlsOptions);
@@ -136,8 +137,8 @@ Console.WriteLine(payload["_id"]);
 var encryptedName = clientEncryption.Encrypt("Poorna", deterministicEncryptOptions);
 
 // WRITE YOUR QUERY HERE FOR AUTODECRYPTION. REMEMBER WHICH CLIENT TO USE!
-var filter = Builders<BsonDocument>.Filter.Eq(d => d["name.firstName"], encryptedName);
-var encryptedDoc = await (await encryptedClient.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).FindAsync(filter)).FirstOrDefaultAsync<BsonDocument>();
+var filter = Builders<BsonDocument>.Filter ; // TODO: define the filter for your query
+var encryptedDoc = ; 
 Console.WriteLine(encryptedDoc);
 
 static MongoClient MdbClient(string connectionString, AutoEncryptionOptions? options = null)
