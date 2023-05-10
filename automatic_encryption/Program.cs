@@ -4,19 +4,19 @@ using MongoDB.Driver.Encryption;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
-const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "password123";
+const string PETNAME = "";
+const string MDB_PASSWORD = "";
 
-const string AppUser = "app_user";
-const string CaPath = "/etc/pki/tls/certs/ca.cert";
+const string appUser = "app_user";
+const string caPath = "/etc/pki/tls/certs/ca.cert";
 
 // Note that the .NET driver requires the certificate to be in PKCS12 format. You can convert
 // the file /home/ec2-user/server.pem into PKCS12 with the command
 // openssl pkcs12 -export -out "/home/ec2-user/server.pkcs12" -in "/home/ec2-user/server.pem" -name "kmipcert"
-const string Pkcs12Path = "/home/ec2-user/server.pkcs12";
+const string pkcs12Path = "/home/ec2-user/server.pkcs12";
 
 // Obviously this should not be hardcoded
-const string connectionString = $"mongodb://{AppUser}:{MDB_PASSWORD}@csfle-mongodb-{PETNAME}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
+const string connectionString = $"mongodb://{appUser}:{MDB_PASSWORD}@csfle-mongodb-{PETNAME}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={caPath}";
 
 // Declare our key vault namespce
 const string keyvaultDb = "__encryption";
@@ -119,7 +119,7 @@ var schema = new BsonDocument
 };
 var schemaMap = new Dictionary<string, BsonDocument> { {"companyData.employee", schema } };
 
-var tlsOptions = new SslSettings { ClientCertificates = new[] { new X509Certificate(Pkcs12Path) } };
+var tlsOptions = new SslSettings { ClientCertificates = new[] { new X509Certificate(pkcs12Path) } };
 var kmsTlsOptions = new Dictionary<string, SslSettings> { { provider, tlsOptions } };
 var extraOptions = new Dictionary<string, object>()
 {
@@ -136,10 +136,7 @@ var autoEncryption = new AutoEncryptionOptions(
 
 var encryptedClient = MdbClient(connectionString, autoEncryption);
 
-Console.WriteLine("Enter firstName:");
-var firstName = "Magnus";// Console.ReadLine();
-Console.WriteLine("Enter lastName:");
-var lastName = "Stråle";//Console.ReadLine();
+var (firstName, lastName) = GenerateName();
 
 var payload = new BsonDocument
 {
@@ -154,7 +151,7 @@ var payload = new BsonDocument
     {
         "address", new BsonDocument
         {
-            { "streetAddress", "29 Bson Street" },
+            { "streetAddress", "2 Bson Street" },
             { "suburbCounty", "Mongoville" },
             { "stateProvince", "Victoria" },
             { "zipPostcode", "3999" },
@@ -164,8 +161,8 @@ var payload = new BsonDocument
     { "dob", new DateTime(1999, 1, 12) },
     { "phoneNumber", "1800MONGO" },
     { "salary", 999999.99 },
-    { "taxIdentifier", "78SDSSWN001" },
-    { "role", new BsonArray { "CE" } }
+    { "taxIdentifier", "78SD20NN001" },
+    { "role", new BsonArray { "CIO" } }
 };
 
 // Do deterministic fields
@@ -183,4 +180,14 @@ static MongoClient MdbClient(string connectionString, AutoEncryptionOptions? opt
     if (options != null) settings.AutoEncryptionOptions = options;
 
     return new MongoClient(settings);
+}
+
+static (string, string) GenerateName()
+{
+    string[] firstNames = {"John","Paul","Ringo","George"};
+    string[] lastNames = {"Lennon","McCartney","Starr","Harrison"};
+    var firstName = firstNames[Random.Shared.Next(0, firstNames.Length)];
+    var lastName = lastNames[Random.Shared.Next(0, lastNames.Length)];
+
+    return (firstName, lastName);
 }
