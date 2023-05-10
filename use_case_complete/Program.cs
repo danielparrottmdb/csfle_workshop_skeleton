@@ -5,8 +5,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 // IN VALUES HERE!
-const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "password123";
+const string PETNAME = ;
+const string MDB_PASSWORD = ;
 
 const string appUser = "app_user";
 const string caPath = "/etc/pki/tls/certs/ca.cert";
