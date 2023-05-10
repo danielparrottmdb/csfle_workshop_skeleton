@@ -2,11 +2,10 @@
 using MongoDB.Driver;
 using MongoDB.Driver.Encryption;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 // IN VALUES HERE!
-const string PETNAME = "solid-cat";
-const string MDB_PASSWORD = "password123";
+const string PETNAME = ;
+const string MDB_PASSWORD = ;
 
 const string appUser = "app_user";
 const string caPath = "/etc/pki/tls/certs/ca.cert";
@@ -175,15 +174,13 @@ await encryptedClient.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(e
 Console.WriteLine(payload["_id"]);
 
 // WRITE YOUR QUERY HERE FOR AUTODECRYPTION. REMEMBER WHICH CLIENT TO USE!
-//var decryptedDocs = // use a FindAsync
-var filter1 = Builders<BsonDocument>.Filter.Eq(d => d["name.firstName"], firstName);
-var decryptedDocs = await encryptedClient.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).FindAsync(filter1);
+var filter1 = Builders<BsonDocument>.Filter.... ; // TODO: the filter clause
+var decryptedDocs = ; // TODO: use a FindAsync
 await decryptedDocs.ForEachAsync(d => Console.WriteLine(d) );
 
 // PUT CODE HERE TO PERFORM A RANGE QUERY ON THE `name.firstName` field
-//decryptedDocs = // use a FindAsync
-var filter2 = Builders<BsonDocument>.Filter.Gte(d => d["name.firstName"], "a");
-decryptedDocs = await encryptedClient.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).FindAsync(filter2);
+var filter2 = Builders<BsonDocument>.Filter... ; // TODO: the filter clause
+decryptedDocs = ; // TODO: use a FindAsync
 await decryptedDocs.ForEachAsync(d => Console.WriteLine(d) );
 
 static MongoClient MdbClient(string connectionString, AutoEncryptionOptions? options = null)
