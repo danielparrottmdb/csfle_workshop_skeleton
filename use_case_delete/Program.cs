@@ -185,18 +185,21 @@ if (payload["name"]["otherNames"].IsBsonNull)
 await encryptedColl.InsertOneAsync(payload);
 Console.WriteLine(payload["_id"]);
 
+// PUT CODE HERE TO RETRIEVE DOCUMENT
 var query = Builders<BsonDocument>.Filter;
-var filter1 = query.And(query.Eq(d => d["name.firstName"], firstName), query.Eq(d => d["name.lastName"], lastName));
-var result = await (await encryptedColl.FindAsync(filter1)).FirstOrDefaultAsync();
+var filter1 = query.And...; // TODO: Query for firstName and lastName
+var result = ; // PUT CODE HERE TO RETRIEVE DOCUMENT
 Console.WriteLine(result);
 
-var filter2 = query.Eq(d => d["keyAltNames"], employeeId);
-await client.GetDatabase(keyvaultDb).GetCollection<BsonDocument>(keyvaultColl).DeleteOneAsync(filter2);
+// WRITE CODE TO DELETE EMPLOYEE's DEK HERE
 
-await Task.Delay(60000); // One minute
+result = ; // PUT CODE HERE TO RETRIEVE DOCUMENT
+Console.WriteLine(result);
 
-var result1 = await (await encryptedColl.FindAsync(filter1)).FirstOrDefaultAsync();
-System.Console.WriteLine(result1);
+// PUT SLEEP HERE
+
+result = ; // PUT CODE HERE TO RETRIEVE DOCUMENT, LOOK AT ERROR HANDLING!
+Console.WriteLine(result);
 
 static MongoClient MdbClient(string connectionString, AutoEncryptionOptions? options = null)
 {
