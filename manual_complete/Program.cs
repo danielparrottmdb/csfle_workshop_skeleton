@@ -1,23 +1,22 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Encryption;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
 const string PETNAME = ;
 const string MDB_PASSWORD = ;
 
-const string AppUser = "app_user";
-const string CaPath = "/etc/pki/tls/certs/ca.cert";
+const string appUser = "app_user";
+const string caPath = "/etc/pki/tls/certs/ca.cert";
 
 // Note that the .NET driver requires the certificate to be in PKCS12 format. You can convert
 // the file /home/ec2-user/server.pem into PKCS12 with the command
 // openssl pkcs12 -export -out "/home/ec2-user/server.pkcs12" -in "/home/ec2-user/server.pem" -name "kmipcert"
-const string Pkcs12Path = "/home/ec2-user/server.pkcs12";
+const string pkcs12Path = "/home/ec2-user/server.pkcs12";
 
 // Obviously this should not be hardcoded
-const string connectionString = $"mongodb://{AppUser}:{MDB_PASSWORD}@csfle-mongodb-{PETNAME}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={CaPath}";
+const string connectionString = $"mongodb://{appUser}:{MDB_PASSWORD}@csfle-mongodb-{PETNAME}.mdbtraining.net/?serverSelectionTimeoutMS=5000&tls=true&tlsCAFile={caPath}";
 
 // Declare our key vault namespce
 const string keyvaultDb = "__encryption";
@@ -45,7 +44,7 @@ const string encryptedCollName = "employee";
 var client = new MongoClient(connectionString);
 
 // Instantiate our ClientEncryption object
-var tlsOptions = new SslSettings { ClientCertificates = new [] { new X509Certificate(Pkcs12Path) } };
+var tlsOptions = new SslSettings { ClientCertificates = new [] { new X509Certificate(pkcs12Path) } };
 var kmsTlsOptions = new Dictionary<string, SslSettings> { { provider, tlsOptions } };
 var clientEncryptionOptions = new ClientEncryptionOptions(client, keyvault_namespace, kmsProvider, kmsTlsOptions);
 var clientEncryption = new ClientEncryption(clientEncryptionOptions);
