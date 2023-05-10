@@ -4,8 +4,8 @@ using MongoDB.Driver.Encryption;
 using System.Security.Cryptography.X509Certificates;
 
 // IN VALUES HERE!
-const string PETNAME = "";
-const string MDB_PASSWORD = "";
+const string PETNAME = ;
+const string MDB_PASSWORD = ;
 
 const string appUser = "app_user";
 const string caPath = "/etc/pki/tls/certs/ca.cert";
@@ -58,7 +58,7 @@ var schema = new BsonDocument
     {
         "encryptMetadata", new BsonDocument {
             { "keyId", new BsonArray { dataKeyId_1 } },
-            { "algorithm", "AEAD_AES_256_CBC_HMAC_SHA_512-Random" }
+            { "algorithm", "" } // TODO: PUT APPROPRIATE ALGORITHM HERE
         }
     },
     {
@@ -73,47 +73,11 @@ var schema = new BsonDocument
                                 { "algorithm", "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic" }
                             }
                         } }
-                    },
-                    {
-                        "lastName", new BsonDocument { {
-                            "encrypt", new BsonDocument {
-                                { "bsonType", "string" },
-                                { "algorithm", "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic" }
-                            }
-                        } }
-                    },
-                    {
-                        "otherNames", new BsonDocument { {
-                            "encrypt", new BsonDocument { { "bsonType", "string" } }
-                        } }
-                    } }
+                        // TODO: PUT MORE FIELDS IN HERE
+                    }
                 } }
-            },
-            {
-                "address", new BsonDocument { {
-                    "encrypt", new BsonDocument { { "bsonType", "object" } }
-                } }
-            },
-            {
-                "dob", new BsonDocument { {
-                    "encrypt", new BsonDocument { { "bsonType", "date" } }
-                } }
-            },
-            {
-                "phoneNumber", new BsonDocument { {
-                    "encrypt", new BsonDocument { { "bsonType", "string" } }
-                } }
-            },
-            {
-                "salary", new BsonDocument { {
-                    "encrypt", new BsonDocument { { "bsonType", "double" } }
-                } }
-            },
-            {
-                "taxIdentifier", new BsonDocument { {
-                    "encrypt", new BsonDocument { { "bsonType", "string" } }
-                } }
-            }
+            } }
+            // TODO: COMPLETE THE REST OF THE SCHEMA MAP
         }
     }
 };
