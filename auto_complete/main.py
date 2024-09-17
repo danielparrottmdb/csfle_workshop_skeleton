@@ -110,7 +110,7 @@ def main():
     "companyData.employee": {
       "bsonType": "object",
       "encryptMetadata": {
-        "keyId": data_key_id_1,
+        "keyId": [data_key_id_1],
         "algorithm": "AEAD_AES_256_CBC_HMAC_SHA_512-Random"
       },
       "properties": {
@@ -168,7 +168,7 @@ def main():
   auto_encryption = AutoEncryptionOpts(
     kms_provider,
     keyvault_namespace,
-    schema_map = {schema_map},
+    schema_map = schema_map,
     kms_tls_options = {
       "kmip": {
         "tlsCAFile": "/etc/pki/tls/certs/ca.cert",
