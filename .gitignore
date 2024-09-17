@@ -132,3 +132,8 @@ dmypy.json
 
 */go.mod
 */go.sum
+
+# csharp
+*.sln
+obj/
+bin/
