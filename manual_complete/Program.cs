@@ -121,7 +121,7 @@ Console.WriteLine(payload);
 await client.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).InsertOneAsync(payload);
 Console.WriteLine(payload["_id"]);
 
-var encryptedName = clientEncryption.Encrypt("Manish", deterministicEncryptOptions);
+var encryptedName = clientEncryption.Encrypt("Kuber", deterministicEncryptOptions);
 var filter = Builders<BsonDocument>.Filter.Eq(d => d["name.firstName"], encryptedName);
 var encryptedDoc = await (await client.GetDatabase(encryptedDbName).GetCollection<BsonDocument>(encryptedCollName).FindAsync(filter)).FirstOrDefaultAsync<BsonDocument>();
 Console.WriteLine(encryptedDoc);
